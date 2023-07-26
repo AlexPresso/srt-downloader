@@ -24,3 +24,10 @@ Subtitles are downloaded from [opensubtitles.com](https://opensubtitles.com).
 | -p    | Yes      | OpenSubtitles password      | -                 |
 | -d    | No       | Media files directory       | Current directory |
 | -l    | No       | Languages (comma separated) | en                |
+
+## Todo
+
+- Multiple subtitles providers
+- Start by searching by media hash and fallback on media name search
+- Improve `getBestSubtitles()` using scoring algorithm
+- Optimize and clean code for faster execution
