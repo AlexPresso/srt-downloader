@@ -1,8 +1,7 @@
 module.exports = class {
-    constructor(name, directory, fps) {
+    constructor(name, directory) {
         this.name = name;
         this.directory = directory;
-        this.fps = fps
         this.subtitles = new Map();
     }
 }
