@@ -18,11 +18,14 @@ module.exports = class {
             const prevScore = bestSubtitles.has(subtitle.attributes.language) ?
                 bestSubtitles.get(subtitle.attributes.language).score :
                 -Infinity;
-            const uploadDate = Date.parse(subtitle.attributes.upload_date);
 
             subtitle.score = subtitle.attributes.votes +
                 subtitle.attributes.new_download_count +
-                uploadDate;
+                subtitle.attributes.votes +
+                subtitle.attributes.ratings;
+
+            if(subtitle.attributes.from_trusted)
+                subtitle.score = +Infinity;
 
             if(subtitle.score > prevScore)
                 bestSubtitles.set(subtitle.attributes.language, subtitle);
