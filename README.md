@@ -15,7 +15,7 @@ Subtitles are downloaded from [opensubtitles.com](https://opensubtitles.com).
 - OpenSubtitles.com consumer API key (you can create one [here](https://www.opensubtitles.com/fr/consumers))
 
 ## Usage
-`npx subtitles-downloader -a <apiKey> -u <username> -p <password>`
+`npx srt-downloader -a <apiKey> -u <username> -p <password>`
 
 | Flags | Required | Description                 | Default           |
 |-------|----------|-----------------------------|-------------------|
