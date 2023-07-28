@@ -24,6 +24,7 @@ module.exports = class {
 
         Logger.debug("Fetching media files...");
         await this.fetchMediaFiles(this.options.directory, mediaFiles, orphanSubFiles);
+        Logger.debug(`Found ${mediaFiles.size} media files.`);
         Logger.debug("Fetching existing subtitles...");
         await this.fetchOrphanSubtitles(mediaFiles, orphanSubFiles);
         Logger.info(`Downloading subtitles for: ${this.options.languages}...`);
