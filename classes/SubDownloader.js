@@ -4,9 +4,10 @@ const Logger = require('../utils/Logger');
 const MediaFile = require('./MediaFile');
 const Subtitle = require('./Subtitle');
 const SubtitleUtils = require('../utils/SubtitleUtils');
+const StringUtils = require('../utils/StringUtils');
 
 const fs = require('fs');
-const mediaInfo = require('mediainfo-wrapper');
+const ffmpeg = require('ffmpeg');
 
 module.exports = class {
     constructor(options) {
@@ -59,21 +60,14 @@ module.exports = class {
             } else {
                 let infos = {};
                 try {
-                    [infos] = await mediaInfo(fullpath);
+                    infos = await new ffmpeg(fullpath);
                 } catch(_) {}
 
-                if(infos.video) {
-                    mediaFiles.set(infos.general.file_name[0], new MediaFile(
-                        infos.general.file_name[0],
-                        infos.general.folder_name[0],
-                        infos.video[0].frame_rate[0]
-                    ));
-                } else if (infos.text && infos.general.file_extension[0] === 'srt') {
+                if(infos.metadata.video.codec) {
+                    mediaFiles.set(StringUtils.removeExtension(f), new MediaFile(StringUtils.removeExtension(f), dir));
+                } else if (infos.metadata.video.container === "srt") {
                     let found = false;
-                    const subtitle = new Subtitle(
-                        infos.general.file_name[0],
-                        infos.general.folder_name[0]
-                    );
+                    const subtitle = new Subtitle(StringUtils.removeExtension(f), dir);
 
                     for(const [k, v] of mediaFiles) {
                         if(!subtitle.name.includes(k))

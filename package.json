@@ -1,6 +1,6 @@
 {
   "name": "srt-downloader",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Subtitles downloader tool",
   "main": "index.js",
   "repository": "https://github.com/alexpresso/srt-downloader",
@@ -13,8 +13,8 @@
   "dependencies": {
     "async-get-file": "^1.0.4",
     "colors": "^1.4.0",
+    "ffmpeg": "^0.0.4",
     "glob": "^10.3.3",
-    "mediainfo-wrapper": "^1.2.0",
     "subtitles.js": "https://github.com/AlexPresso/subtitles.js",
     "yargs": "^17.7.2"
   }
