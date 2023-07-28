@@ -1,9 +1,9 @@
 {
-  "name": "subtitles-downloader",
+  "name": "srt-downloader",
   "version": "1.0.0",
   "description": "Subtitles downloader tool",
   "main": "index.js",
-  "repository": "https://github.com/alexpresso/subtitles-downloader",
+  "repository": "https://github.com/alexpresso/srt-downloader",
   "author": "AlexPresso",
   "license": "MIT",
   "private": false,
