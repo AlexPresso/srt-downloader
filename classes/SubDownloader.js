@@ -56,7 +56,10 @@ module.exports = class {
             if(fs.statSync(fullpath).isDirectory()) {
                 await this.fetchMediaFiles(fullpath, mediaFiles, orphanSubFiles);
             } else {
-                const [infos] = await mediaInfo(fullpath);
+                let infos = {};
+                try {
+                    [infos] = await mediaInfo(fullpath);
+                } catch(_) {}
 
                 if(infos.video) {
                     mediaFiles.set(infos.general.file_name[0], new MediaFile(
