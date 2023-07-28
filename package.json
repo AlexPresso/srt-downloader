@@ -1,6 +1,6 @@
 {
   "name": "srt-downloader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Subtitles downloader tool",
   "main": "index.js",
   "repository": "https://github.com/alexpresso/srt-downloader",
