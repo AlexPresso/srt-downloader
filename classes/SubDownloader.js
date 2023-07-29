@@ -102,7 +102,7 @@ module.exports = class {
             const { data } = await this.os.subtitles().search({
                 query: name,
                 languages: this.options.languages
-            });
+            }).catch(console.error);
 
             const bestSubtitles = SubtitleUtils.getBestSubtitlesToDownload(data, media);
             for(const subtitle of bestSubtitles) {
@@ -122,7 +122,7 @@ module.exports = class {
 
                 await downloadFile(link, {
                     directory: media.directory
-                });
+                }).catch(console.error);
 
                 Logger.debug(`Downloaded ${subName} subtitle`);
             }
