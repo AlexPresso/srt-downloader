@@ -7,7 +7,7 @@ const SubtitleUtils = require('../utils/SubtitleUtils');
 const StringUtils = require('../utils/StringUtils');
 
 const fs = require('fs');
-const ffmpeg = require('ffmpeg');
+const ffprobe = require('node-ffprobe');
 
 module.exports = class {
     constructor(options) {
@@ -58,14 +58,13 @@ module.exports = class {
             if(fs.statSync(fullpath).isDirectory()) {
                 await this.fetchMediaFiles(fullpath, mediaFiles, orphanSubFiles);
             } else {
-                let infos = {};
-                try {
-                    infos = await new ffmpeg(fullpath);
-                } catch(_) {}
+                const infos = await ffprobe(fullpath);
+                if(infos.error)
+                    continue;
 
-                if(infos.metadata.video.codec) {
+                if(infos.chapters.length > 0 || infos.streams.length >= 2) {
                     mediaFiles.set(StringUtils.removeExtension(f), new MediaFile(StringUtils.removeExtension(f), dir));
-                } else if (infos.metadata.video.container === "srt") {
+                } else if (infos.format.format_name === "srt") {
                     let found = false;
                     const subtitle = new Subtitle(StringUtils.removeExtension(f), dir);
 
