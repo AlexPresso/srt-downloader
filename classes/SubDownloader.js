@@ -30,6 +30,7 @@ module.exports = class {
         await this.fetchOrphanSubtitles(mediaFiles, orphanSubFiles);
         Logger.info(`Downloading subtitles for: ${this.options.languages}...`);
         await this.downloadMissingSubtitles(mediaFiles);
+        Logger.success("Done.");
     }
 
     async login() {
@@ -111,16 +112,11 @@ module.exports = class {
                 }).file_id;
 
 
-                const { link } = await this.os.download().download(
-                    fileId,
-                    this.token,
-                    {
-                        file_name: subName
-                    }
-                );
+                const { link } = await this.os.download().download(fileId, this.token, {file_name: subName});
 
                 await downloadFile(link, {
-                    directory: media.directory
+                    directory: media.directory,
+                    filename: `${subName}.srt`
                 }).catch(console.error);
 
                 Logger.debug(`Downloaded ${subName} subtitle`);
