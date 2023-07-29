@@ -13,9 +13,9 @@
   "dependencies": {
     "async-get-file": "^1.0.4",
     "colors": "^1.4.0",
-    "ffmpeg": "^0.0.4",
     "glob": "^10.3.3",
-    "subtitles.js": "https://github.com/AlexPresso/srt-downloader",
+    "node-ffprobe": "^3.0.0",
+    "subtitles.js": "https://github.com/AlexPresso/subtitles.js",
     "yargs": "^17.7.2"
   }
 }
