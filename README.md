@@ -1,4 +1,4 @@
-# Subtitles Downloader
+# SRT Downloader
 
 A NodeJS CLI app to download subtitles for every media files in a directory.
 Subtitles are downloaded from [opensubtitles.com](https://opensubtitles.com).
@@ -11,6 +11,7 @@ Subtitles are downloaded from [opensubtitles.com](https://opensubtitles.com).
 4. The subtitles are downloaded and placed next to the media files
 
 ## Prerequisites
+- ffmpeg must be installed on your system
 - OpenSubtitles.com account
 - OpenSubtitles.com consumer API key (you can create one [here](https://www.opensubtitles.com/fr/consumers))
 
