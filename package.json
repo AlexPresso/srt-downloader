@@ -1,15 +1,26 @@
 {
   "name": "srt-downloader",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Subtitles downloader tool",
   "main": "index.js",
-  "repository": "https://github.com/alexpresso/srt-downloader",
-  "author": "AlexPresso",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alexpresso/srt-downloader"
+  },
+  "author": {
+    "name": "AlexPresso",
+    "url": "https://github.com/alexpresso"
+  },
   "license": "MIT",
   "private": false,
-  "bin": {
-    "srt-downloader": "./index.js"
-  },
+  "keywords": [
+    "subtitles",
+    "opensubtitles",
+    "open-subtitles",
+    "download",
+    "downloader"
+  ],
+  "bin": "./index.js",
   "dependencies": {
     "async-get-file": "^1.0.4",
     "colors": "^1.4.0",
