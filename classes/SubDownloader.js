@@ -13,7 +13,9 @@ module.exports = class {
     constructor(options) {
         this.options = options;
         this.os = new SubtitlesJS({
-            apiKey: options.apiKey
+            apiKey: options.apiKey,
+            appName: "SubDownloader",
+            appVersion: "1.0.0"
         });
     }
 
