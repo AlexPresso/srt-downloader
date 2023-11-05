@@ -14,7 +14,7 @@ module.exports = class {
         this.options = options;
         this.os = new SubtitlesJS({
             apiKey: options.apiKey,
-            appName: "SubDownloader",
+            appName: "github.com/AlexPresso/srt-downloader",
             appVersion: "1.0.0"
         });
     }
@@ -54,35 +54,38 @@ module.exports = class {
     }
 
     async fetchMediaFiles(dir, mediaFiles, orphanSubFiles) {
-        const files = fs.readdirSync(dir);
-        for(const f of files) {
-            const fullpath = `${dir}/${f}`;
+        let i = 0;
+        const files = fs.readdirSync(dir, {recursive: true, withFileTypes: true});
 
-            if(fs.statSync(fullpath).isDirectory()) {
-                await this.fetchMediaFiles(fullpath, mediaFiles, orphanSubFiles);
-            } else {
-                const infos = await ffprobe(fullpath);
-                if(infos.error)
-                    continue;
+        for(const e of files) {
+            Logger.debug(`Probing ${e.name} (${++i}/${files.length}) ...`);
 
-                if(infos.chapters.length > 0 || infos.streams.length >= 2) {
-                    mediaFiles.set(StringUtils.removeExtension(f), new MediaFile(StringUtils.removeExtension(f), dir));
-                } else if (infos.format.format_name === "srt") {
-                    let found = false;
-                    const subtitle = new Subtitle(StringUtils.removeExtension(f), dir);
+            const fullpath = `${e.path}/${e.name}`;
+            const name = StringUtils.removeExtension(e.name);
 
-                    for(const [k, v] of mediaFiles) {
-                        if(!subtitle.name.includes(k))
-                            continue;
+            const infos = await ffprobe(fullpath);
+            if(infos.error) {
+                Logger.error(`An error occurred while probing ${e.name}.`);
+                continue;
+            }
 
-                        found = true;
-                        const subInfos = SubtitleUtils.getSubtitleInfos(subtitle, v);
-                        v.subtitles.set(subInfos.language, subtitle);
-                    }
+            if(infos.chapters.length > 0 || infos.streams.length >= 2) {
+                mediaFiles.set(name, new MediaFile(name, dir));
+            } else if (infos.format.format_name === "srt") {
+                let found = false;
+                const subtitle = new Subtitle(name, dir);
 
-                    if(!found)
-                        orphanSubFiles.push(subtitle);
+                for(const [k, v] of mediaFiles) {
+                    if(!subtitle.name.includes(k))
+                        continue;
+
+                    found = true;
+                    const subInfos = SubtitleUtils.getSubtitleInfos(subtitle, v);
+                    v.subtitles.set(subInfos.language, subtitle);
                 }
+
+                if(!found)
+                    orphanSubFiles.push(subtitle);
             }
         }
     }
@@ -100,7 +103,10 @@ module.exports = class {
     }
 
     async downloadMissingSubtitles(mediaFiles) {
+        let i = 0;
         for(const [name, media] of mediaFiles) {
+            Logger.debug(`Updating subtitles of ${name}... (${++i}/${mediaFiles.size})`)
+
             const { data } = await this.os.subtitles().search({
                 query: name,
                 languages: this.options.languages
