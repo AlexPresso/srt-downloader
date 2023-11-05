@@ -67,6 +67,7 @@ module.exports = class {
             const infos = await ffprobe(fullpath);
             if(infos.error) {
                 Logger.error(`An error occurred while probing ${e.name}.`);
+                console.error(infos.error);
                 continue;
             }
 
