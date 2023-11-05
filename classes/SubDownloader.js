@@ -55,7 +55,8 @@ module.exports = class {
 
     async fetchMediaFiles(dir, mediaFiles, orphanSubFiles) {
         let i = 0;
-        const files = fs.readdirSync(dir, {recursive: true, withFileTypes: true});
+        const files = fs.readdirSync(dir, {recursive: true, withFileTypes: true})
+            .filter(e => e.isFile());
 
         for(const e of files) {
             Logger.debug(`Probing ${e.name} (${++i}/${files.length}) ...`);
@@ -70,10 +71,10 @@ module.exports = class {
             }
 
             if(infos.chapters.length > 0 || infos.streams.length >= 2) {
-                mediaFiles.set(name, new MediaFile(name, dir));
+                mediaFiles.set(name, new MediaFile(name, e.path));
             } else if (infos.format.format_name === "srt") {
                 let found = false;
-                const subtitle = new Subtitle(name, dir);
+                const subtitle = new Subtitle(name, e.path);
 
                 for(const [k, v] of mediaFiles) {
                     if(!subtitle.name.includes(k))
