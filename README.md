@@ -4,7 +4,7 @@ A NodeJS CLI app to download subtitles for every media files in a directory.
 Subtitles are downloaded from [opensubtitles.com](https://opensubtitles.com).
 
 <p align="center">
-  <img src="https://github.com/AlexPresso/srt-downloader/blob/main/.github/screenshot.png?raw=true" height=200px alt="Screenshot">
+  <img src="https://github.com/AlexPresso/srt-downloader/blob/main/.github/screen.png?raw=true" height=200px alt="Screenshot">
 </p>
 
 ## How it works
