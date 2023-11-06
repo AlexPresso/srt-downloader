@@ -8,18 +8,24 @@ const StringUtils = require('../utils/StringUtils');
 
 const fs = require('fs');
 const ffprobe = require('node-ffprobe');
+const blackList = [
+    '.txt',
+    '.nfo',
+    '.jpg',
+    '.png',
+    '.vsmeta',
+    'SYNOVIDEO',
+    'SYNOINDEX'
+]
 
 module.exports = class {
     constructor(options) {
         this.options = options;
-
-        this.blackList = [
-            '.jpg',
-            '.png',
-            '.vsmeta',
-            'SYNOVIDEO',
-            'SYNOINDEX'
-        ];
+        this.stats = {
+            present: new Map(),
+            downloaded: new Map(),
+            errors: new Map()
+        }
 
         this.os = new SubtitlesJS({
             apiKey: options.apiKey,
@@ -32,6 +38,8 @@ module.exports = class {
         const mediaFiles = new Map(); //Map<name, MediaFile>
         const orphanSubFiles = [];
 
+        this.initStatistics();
+
         await this.login();
 
         Logger.debug("Fetching media files...");
@@ -41,7 +49,28 @@ module.exports = class {
         await this.fetchOrphanSubtitles(mediaFiles, orphanSubFiles);
         Logger.info(`Downloading subtitles for: ${this.options.languages}...`);
         await this.downloadMissingSubtitles(mediaFiles);
-        Logger.success("Done.");
+
+        Logger.info("Finishing task...")
+        Logger.info(`Nb of fetched media files: ${mediaFiles.size}`);
+        for(const [l, c] of this.stats.downloaded) {
+            Logger.info(`Nb of downloaded SRT for lang ${l}: ${c} (already present: ${this.stats.present.get(l)})`);
+        }
+
+        if(this.stats.errors.size > 0) {
+            Logger.info(`Error summary (${this.stats.errors.size} errors):`);
+            for(const [f, e] of this.stats.errors) {
+                Logger.error(f, e);
+            }
+
+            Logger.success("Done.");
+        }
+    }
+
+    initStatistics() {
+        this.options.languages.split(',').forEach(l => {
+            this.stats.downloaded.set(l, 0);
+            this.stats.present.set(l, 0);
+        });
     }
 
     async login() {
@@ -66,7 +95,7 @@ module.exports = class {
         let i = 0;
 
         const files = fs.readdirSync(dir, {recursive: true, withFileTypes: true})
-            .filter(e => e.isFile() && !this.blackList.some(b => e.name.includes(b)));
+            .filter(e => e.isFile() && !blackList.some(b => e.name.includes(b)));
 
         for(const e of files) {
             Logger.debug(`Probing ${e.name} (${++i}/${files.length}) ...`);
@@ -76,8 +105,8 @@ module.exports = class {
 
             const infos = await ffprobe(fullpath);
             if(infos.error) {
-                Logger.error(`An error occurred while probing ${e.name}.`);
-                console.error(infos.error);
+                Logger.error(`An error occurred while probing ${e.name}, skipping.`);
+                this.stats.errors.set(e.name, infos.error);
                 continue;
             }
 
@@ -94,6 +123,9 @@ module.exports = class {
                     found = true;
                     const subInfos = SubtitleUtils.getSubtitleInfos(subtitle, v);
                     v.subtitles.set(subInfos.language, subtitle);
+
+                    let count = this.stats.present.get(subInfos.language);
+                    this.stats.present.set(subInfos.language, ++count);
                 }
 
                 if(!found)
@@ -110,6 +142,9 @@ module.exports = class {
 
                 const infos = SubtitleUtils.getSubtitleInfos(subtitle, v);
                 v.subtitles.set(infos.language, subtitle);
+
+                let count = this.stats.present.get(infos.language);
+                this.stats.present.set(infos.language, ++count);
             }
         }
     }
@@ -122,10 +157,16 @@ module.exports = class {
             const { data } = await this.os.subtitles().search({
                 query: name,
                 languages: this.options.languages
-            }).catch(console.error);
+            }).catch(e => {
+                Logger.error(`An error occurred while fetching subtitles of ${name}`);
+                this.stats.errors.set(name, e);
+            });
 
             const bestSubtitles = SubtitleUtils.getBestSubtitlesToDownload(data, media);
             for(const subtitle of bestSubtitles) {
+                let count = this.stats.downloaded.get(subtitle.attributes.language);
+                this.stats.downloaded.set(subtitle.attributes.language, ++count);
+
                 const subName = `${media.name}.${subtitle.attributes.language}`;
                 const fileId = subtitle.attributes.files.reduce((prev, curr) => {
                     return prev.cd_number > curr.cd_number
@@ -137,9 +178,12 @@ module.exports = class {
                 await downloadFile(link, {
                     directory: media.directory,
                     filename: `${subName}.srt`
-                }).catch(console.error);
+                }).catch(e => {
+                    Logger.error(`Error while downloading ${subName}.srt`);
+                    this.stats.errors.set(`${subName}.srt`, e);
+                });
 
-                Logger.debug(`Downloaded ${subName} subtitle`);
+                Logger.info(`Downloaded ${subName} subtitle`);
             }
         }
     }
