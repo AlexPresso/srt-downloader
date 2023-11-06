@@ -16,6 +16,7 @@ module.exports = class {
         this.blackList = [
             '.jpg',
             '.png',
+            '.vsmeta',
             'SYNOVIDEO',
             'SYNOINDEX'
         ];
