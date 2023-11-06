@@ -8,6 +8,7 @@ const StringUtils = require('../utils/StringUtils');
 
 const fs = require('fs');
 const ffprobe = require('node-ffprobe');
+const consoleSeparator = "————————————————————————————————————————";
 const blackList = [
     '.txt',
     '.nfo',
@@ -44,26 +45,29 @@ module.exports = class {
 
         Logger.debug("Fetching media files...");
         await this.fetchMediaFiles(this.options.directory, mediaFiles, orphanSubFiles);
-        Logger.debug(`Found ${mediaFiles.size} media files.`);
+        Logger.debug(`Found ${mediaFiles.size} media file(s).`);
         Logger.debug("Fetching existing subtitles...");
         await this.fetchOrphanSubtitles(mediaFiles, orphanSubFiles);
         Logger.info(`Downloading subtitles for: ${this.options.languages}...`);
         await this.downloadMissingSubtitles(mediaFiles);
 
-        Logger.info("Finishing task...")
-        Logger.info(`Nb of fetched media files: ${mediaFiles.size}`);
+        Logger.success("Done.");
+
+        console.log("\n" + consoleSeparator);
+        Logger.info(`Nb of fetched media file(s): ${mediaFiles.size}`, true);
         for(const [l, c] of this.stats.downloaded) {
-            Logger.info(`Nb of downloaded SRT for lang ${l}: ${c} (already present: ${this.stats.present.get(l)})`);
+            Logger.info(`Nb of downloaded SRT for lang ${l}: ${c} (existing: ${this.stats.present.get(l)})`, true);
         }
 
         if(this.stats.errors.size > 0) {
-            Logger.info(`Error summary (${this.stats.errors.size} errors):`);
+            console.log(consoleSeparator);
+            Logger.info(`Error summary (${this.stats.errors.size} error(s)):`, true);
             for(const [f, e] of this.stats.errors) {
-                Logger.error(f, e);
+                Logger.error(`--  ${f}`, e);
             }
-
-            Logger.success("Done.");
         }
+
+        console.log(consoleSeparator + "\n");
     }
 
     initStatistics() {
@@ -154,36 +158,33 @@ module.exports = class {
         for(const [name, media] of mediaFiles) {
             Logger.debug(`Updating subtitles of ${name}... (${++i}/${mediaFiles.size})`)
 
-            const { data } = await this.os.subtitles().search({
-                query: name,
-                languages: this.options.languages
-            }).catch(e => {
-                Logger.error(`An error occurred while fetching subtitles of ${name}`);
-                this.stats.errors.set(name, e);
-            });
-
-            const bestSubtitles = SubtitleUtils.getBestSubtitlesToDownload(data, media);
-            for(const subtitle of bestSubtitles) {
-                let count = this.stats.downloaded.get(subtitle.attributes.language);
-                this.stats.downloaded.set(subtitle.attributes.language, ++count);
-
-                const subName = `${media.name}.${subtitle.attributes.language}`;
-                const fileId = subtitle.attributes.files.reduce((prev, curr) => {
-                    return prev.cd_number > curr.cd_number
-                }).file_id;
-
-
-                const { link } = await this.os.download().download(fileId, this.token, {file_name: subName});
-
-                await downloadFile(link, {
-                    directory: media.directory,
-                    filename: `${subName}.srt`
-                }).catch(e => {
-                    Logger.error(`Error while downloading ${subName}.srt`);
-                    this.stats.errors.set(`${subName}.srt`, e);
+            try {
+                const { data } = await this.os.subtitles().search({
+                    query: name,
+                    languages: this.options.languages
                 });
 
-                Logger.info(`Downloaded ${subName} subtitle`);
+                const bestSubtitles = SubtitleUtils.getBestSubtitlesToDownload(data, media);
+                for(const subtitle of bestSubtitles) {
+                    const subName = `${media.name}.${subtitle.attributes.language}`;
+                    const fileId = subtitle.attributes.files
+                        .reduce((prev, curr) => prev.cd_number > curr.cd_number)
+                        .file_id;
+
+                    const { link } = await this.os.download().download(fileId, this.token, {file_name: subName});
+                    await downloadFile(link, {
+                        directory: media.directory,
+                        filename: `${subName}.srt`
+                    });
+
+                    let count = this.stats.downloaded.get(subtitle.attributes.language);
+                    this.stats.downloaded.set(subtitle.attributes.language, ++count);
+
+                    Logger.info(`Downloaded ${subName} subtitle`);
+                }
+            } catch (e) {
+                Logger.error(`Error while downloading subtitle for ${name}`);
+                this.stats.errors.set(name, e);
             }
         }
     }
