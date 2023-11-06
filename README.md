@@ -3,6 +3,10 @@
 A NodeJS CLI app to download subtitles for every media files in a directory.
 Subtitles are downloaded from [opensubtitles.com](https://opensubtitles.com).
 
+<p align="center">
+  <img src="https://github.com/AlexPresso/srt-downloader/blob/main/.github/screenshot.png?raw=true" height=200px alt="Screenshot">
+</p>
+
 ## How it works
 
 1. The app is looking for every media files and subtitles in directory and subdirectories.
@@ -11,7 +15,7 @@ Subtitles are downloaded from [opensubtitles.com](https://opensubtitles.com).
 4. The subtitles are downloaded and placed next to the media files
 
 ## Prerequisites
-- ffmpeg must be installed on your system
+- ffmpeg (or at least ffprobe) must be installed on your system
 - OpenSubtitles.com account
 - OpenSubtitles.com consumer API key (you can create one [here](https://www.opensubtitles.com/fr/consumers))
 
@@ -30,5 +34,3 @@ Subtitles are downloaded from [opensubtitles.com](https://opensubtitles.com).
 
 - Multiple subtitles providers
 - Start by searching by media hash and fallback on media name search
-- Improve `getBestSubtitles()` using scoring algorithm
-- Optimize and clean code for faster execution
