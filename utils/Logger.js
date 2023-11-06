@@ -11,8 +11,11 @@ module.exports = class Logger {
         this.log(message, 'green');
     }
 
-    static error(message) {
+    static error(message, error) {
         this.log(message, 'red');
+
+        if(error)
+            console.log(error);
     }
 
     static debug(message) {
