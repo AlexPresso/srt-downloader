@@ -12,6 +12,14 @@ const ffprobe = require('node-ffprobe');
 module.exports = class {
     constructor(options) {
         this.options = options;
+
+        this.blackList = [
+            '.jpg',
+            '.png',
+            'SYNOVIDEO',
+            'SYNOINDEX'
+        ];
+
         this.os = new SubtitlesJS({
             apiKey: options.apiKey,
             appName: "github.com/AlexPresso/srt-downloader",
@@ -55,8 +63,9 @@ module.exports = class {
 
     async fetchMediaFiles(dir, mediaFiles, orphanSubFiles) {
         let i = 0;
+
         const files = fs.readdirSync(dir, {recursive: true, withFileTypes: true})
-            .filter(e => e.isFile());
+            .filter(e => e.isFile() && !this.blackList.some(b => e.name.includes(b)));
 
         for(const e of files) {
             Logger.debug(`Probing ${e.name} (${++i}/${files.length}) ...`);
